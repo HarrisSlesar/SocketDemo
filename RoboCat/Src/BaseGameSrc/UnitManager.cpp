@@ -69,6 +69,7 @@ Unit* UnitManager::createUnit(const Vector2D& position, const Animation& mainAni
 	return pUnit;//return the newly created Unit (for convenience)
 }
 
+/*
 Unit* UnitManager::createUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation, int seed)
 {
 	MemoryManager* pMemoryManager = Game::getInstance()->getMemoryManager();
@@ -101,7 +102,7 @@ Unit* UnitManager::createUnit(const Animation& mainAnimation, const Animation& a
 ;
 	return pUnit;//return the newly created Unit (for convenience)
 }
-
+*/
 void UnitManager::deleteAllUnitsAt2DPosition(const Vector2D& position)
 {
 	while (deleteUnitAt2DPosition(position));

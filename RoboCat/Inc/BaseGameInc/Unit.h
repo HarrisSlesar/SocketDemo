@@ -42,7 +42,7 @@ private:
 class RandomSpawnedUnit : public Unit
 {
 public:
-	RandomSpawnedUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation, int seed);
+	RandomSpawnedUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation);
 
 	virtual ~RandomSpawnedUnit() {};
 
@@ -62,13 +62,12 @@ private:
 	Animation mAltAnimation;
 	Animation* mpCurrentAnimation;
 	Vector2D mPos;
-	int mSeed;
 };
 
 class RandomPosUnit : public Unit
 {
 public:
-	RandomPosUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation, int seed);
+	RandomPosUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation);
 
 	virtual ~RandomPosUnit() {};
 
@@ -88,6 +87,5 @@ private:
 	Animation mAltAnimation;
 	Animation* mpCurrentAnimation;
 	Vector2D mPos;
-	int mSeed;
 	double timer = 3;
 };

@@ -98,7 +98,7 @@ public:
 
 	NetworkManagerState GetState() { return mState; };
 
-	void addAction(Game::ActionTypes type, Vector2D pos, int seed);
+	void addAction(Game::ActionTypes type, Vector2D pos);
 
 private:
 	
@@ -125,7 +125,6 @@ private:
 		void Read(InputMemoryBitStream& inInputStream);
 		Game::ActionTypes type;
 		Vector2D postion;
-		int seed;
 	};
 
 	
@@ -199,6 +198,8 @@ private:
 	int mNextExpectedSequenceNumber;
 	
 	vector<int> mPendingAcks;
+
+	int mSeed = 0;
 
 	struct TransmissionData : public Trackable
 	{

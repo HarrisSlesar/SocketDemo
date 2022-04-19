@@ -9,8 +9,8 @@ namespace
 }
 NetworkManager::NetworkManager() :
 	mBytesSentThisFrame(0),
-	mDropPacketChance(0.1f),
-	mSimulatedLatency(0.5f),
+	mDropPacketChance(0.0f),
+	mSimulatedLatency(0.25f),
 	mBytesReceivedPerSecond(WeightedTimedMovingAverage(1.f)),
 	mBytesSentPerSecond(WeightedTimedMovingAverage(1.f)),
 	mPlayerId(0),
@@ -52,6 +52,9 @@ bool NetworkManager::InitAsMasterPeer(uint16_t inPort, const string& inName)
 	mHighestPlayerId = mPlayerId;
 	mIsMasterPeer = true;
 	mPlayerCount = 1;
+	
+	mSeed = time(NULL);
+	srand(mSeed);
 
 	//in lobby cause we don't need to ask the master peer (since we are the master peer)
 	mState = NetworkManagerState::NMS_Lobby;
@@ -268,6 +271,8 @@ void NetworkManager::HandleNotMPPacket(InputMemoryBitStream& inInputStream)
 
 void NetworkManager::HandleWelcomePacket(InputMemoryBitStream& inInputStream)
 {
+	inInputStream.Read(mSeed);
+	srand(mSeed);
 	//first is my player id
 	int playerId;
 	inInputStream.Read(playerId);
@@ -321,7 +326,6 @@ void NetworkManager::HandleWelcomePacket(InputMemoryBitStream& inInputStream)
 	outPacket.Write(kIntroCC);
 	outPacket.Write(mPlayerId);
 	outPacket.Write(mName);
-
 	
 	WritePendingAcks(outPacket);
 
@@ -390,6 +394,7 @@ void NetworkManager::HandleHelloPacket(InputMemoryBitStream& inInputStream, cons
 		AddInFlightPacket(newPacket, outputStream);
 		
 		outputStream.Write(kWelcomeCC);
+		outputStream.Write(mSeed);
 		//we'll assign the next possible player id to this player
 		mHighestPlayerId++;
 		outputStream.Write(mHighestPlayerId);
@@ -524,7 +529,7 @@ void NetworkManager::HandleUpdatePacket(InputMemoryBitStream& inInputStream, con
 			{
 				ActionData data;
 				data.Read(inInputStream);
-				Game::getInstance()->HandleAction(data.type, data.postion, data.seed);
+				Game::getInstance()->HandleAction(data.type, data.postion);
 
 			}
 		}
@@ -625,8 +630,8 @@ void NetworkManager::ReadIncomingPacketsIntoQueue()
 				float simulatedReceivedTime = Timing::sInstance.GetTimef() + mSimulatedLatency;
 
 				//Simulating Jitter
-				float simulatedJitter = RoboMath::GetRandomFloat(-0.5f,0.5f);
-				simulatedReceivedTime += simulatedJitter;
+				//float simulatedJitter = RoboMath::GetRandomFloat(-0.5f,0.5f);
+				//simulatedReceivedTime += simulatedJitter;
 
 				mPacketQueue.emplace(simulatedReceivedTime, inputStream, fromAddress);
 			}
@@ -737,12 +742,11 @@ NetworkManager::ReceivedPacket::ReceivedPacket(float inReceivedTime, InputMemory
 {
 }
 
-void NetworkManager::addAction(Game::ActionTypes type, Vector2D pos, int seed)
+void NetworkManager::addAction(Game::ActionTypes type, Vector2D pos)
 {
 	ActionData action;
 	action.type = type;
 	action.postion = pos;
-	action.seed = seed;
 	mActionVec.push_back(action);
 }
 
@@ -751,10 +755,6 @@ void NetworkManager::ActionData::Write(OutputMemoryBitStream& inOutputStream)
 	inOutputStream.Write(type);
 	inOutputStream.Write(postion.getX());
 	inOutputStream.Write(postion.getY());
-	if (type == Game::ActionTypes::CreateUnitRand || type == Game::ActionTypes::CreateUnitMove)
-	{
-		inOutputStream.Write(seed);
-	}
 }
 
 void NetworkManager::ActionData::Read(InputMemoryBitStream& inInputStream)
@@ -764,10 +764,6 @@ void NetworkManager::ActionData::Read(InputMemoryBitStream& inInputStream)
 	inInputStream.Read(x);
 	inInputStream.Read(y);
 	postion = Vector2D(x, y);
-	if (type == Game::ActionTypes::CreateUnitRand || type == Game::ActionTypes::CreateUnitMove)
-	{
-		inInputStream.Read(seed);
-	}
 }
 
 void NetworkManager::AddInFlightPacket(TransmissionData* data, OutputMemoryBitStream& output)

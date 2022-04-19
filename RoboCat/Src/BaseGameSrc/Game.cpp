@@ -58,7 +58,6 @@ bool Game::init(unsigned int width, unsigned int height, double targetTimePerFra
 	{
 		cleanup();
 	}
-	srand(time(NULL));
 	SocketUtil::StaticInit();
 
 	string destination = StringUtils::GetCommandLineArg(1);
@@ -125,6 +124,7 @@ void Game::doLoop()
 	Timer timer;
 	PerformanceTracker tracker;
 	
+	float packetTimer = 0.f;
 	while (mShouldContinue)
 	{
 		tracker.clearTracker("loop");
@@ -138,7 +138,13 @@ void Game::doLoop()
 			
 			update(mTargetTimePerFrame);
 			mpNetworkManager->ProcessIncomingPackets();
-			mpNetworkManager->SendOutgoingPackets();
+
+			packetTimer += mTargetTimePerFrame;
+			if (packetTimer >= 500.f)
+			{
+				mpNetworkManager->SendOutgoingPackets();
+				packetTimer = 0.f;
+			}
 		}
 		else
 		{
@@ -173,42 +179,42 @@ void Game::getInput()
 			if (pUnit)
 			{
 				pUnit->toggleAnimation();
-				mpNetworkManager->addAction(ActionTypes::ToggleAnimSingle, pUnit->getCenterPosition(),-1);
+				mpNetworkManager->addAction(ActionTypes::ToggleAnimSingle, pUnit->getCenterPosition());
 			}
 		}
 		if (mpSystem->isKeyPressed(System::SPACE_KEY))
 		{
 			mpUnitManager->togglePauseStateForAllAnimations();
-			mpNetworkManager->addAction(ActionTypes::ToggleAnimAll, Vector2D(0, 0), -1);
+			mpNetworkManager->addAction(ActionTypes::ToggleAnimAll, Vector2D(0, 0));
 		}
 		if (mpSystem->isMouseButtonPressed(System::LEFT))
 		{
 			Vector2D mousePos = mpSystem->getCurrentMousePos();
-			createUnit(mousePos);
-			mpNetworkManager->addAction(ActionTypes::CreateUnit, mousePos, -1);
+			createUnit(mousePos, UnitTypes::BASE_UNIT);
+			mpNetworkManager->addAction(ActionTypes::CreateUnit, mousePos);
 		}
 		if (mpSystem->isMouseButtonPressed(System::RIGHT))
 		{
 			Vector2D mousePos = mpSystem->getCurrentMousePos();
 			mpUnitManager->deleteAllUnitsAt2DPosition(mousePos);
-			mpNetworkManager->addAction(ActionTypes::DestroyUnit, mousePos,-1);
+			mpNetworkManager->addAction(ActionTypes::DestroyUnit, mousePos);
 		}
 		if (mpSystem->isKeyPressed(System::ONE_KEY))
 		{
-			int seed = rand() % 99999999;
 			Vector2D mousePos = mpSystem->getCurrentMousePos();
-			createUnit(mousePos, seed);
-			mpNetworkManager->addAction(ActionTypes::CreateUnitMove, mousePos, seed);
+
+			createUnit(mousePos, UnitTypes::RAND_DIR);
+			mpNetworkManager->addAction(ActionTypes::CreateUnitMove, mousePos);
 		}
 		if (mpSystem->isKeyPressed(System::TWO_KEY))
 		{
-			Vector2D mousePos = mpSystem->getCurrentMousePos();
 
-			
-			int seed = rand() % 99999999;
+			int randX = rand() % 800;
+			int randY = rand() % 600;
+			Vector2D position(randX, randY);
 
-			createUnit(seed);
-			mpNetworkManager->addAction(ActionTypes::CreateUnitRand, mousePos, seed);
+			createUnit(position, UnitTypes::RAND_SPAWN);
+			mpNetworkManager->addAction(ActionTypes::CreateUnitRand, position);
 		}
 	}
 	if (mpSystem->isKeyPressed(System::S_KEY) && !gameStarted && mpNetworkManager->IsMasterPeer())
@@ -257,9 +263,12 @@ const int SPRITES_ACROSS = 4;
 const int SPRITES_DOWN = 4;
 const float TIME_PER_FRAME_MULTIPLE = 5;
 
-void Game::createUnit(const Vector2D& pos)
+void Game::createUnit(const Vector2D& pos, UnitTypes type)
 {
-	
+	switch (type)
+	{
+	case UnitTypes::BASE_UNIT:
+	{
 		float timePerFrame = (float)mTargetTimePerFrame * TIME_PER_FRAME_MULTIPLE;
 		const GraphicsBuffer* pSmurfs = mpGraphicsBufferManager->getBuffer(SMURFS);
 		assert(pSmurfs);
@@ -271,37 +280,39 @@ void Game::createUnit(const Vector2D& pos)
 
 			mpUnitManager->createUnit(pos, smurfAnimation, deanAnimation);
 		}
+		break;
+	}
+	case UnitTypes::RAND_SPAWN:
+	{
+		float timePerFrame = (float)mTargetTimePerFrame * TIME_PER_FRAME_MULTIPLE;
+		const GraphicsBuffer* pSmurfs = mpGraphicsBufferManager->getBuffer(SMURFS);
+		assert(pSmurfs);
+		const GraphicsBuffer* pDean = mpGraphicsBufferManager->getBuffer(DEAN);
+		assert(pDean);
+		Animation smurfAnimation(*pSmurfs, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
+		Animation deanAnimation(*pDean, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
+
+		mpUnitManager->createUnit(pos, deanAnimation, smurfAnimation);
+		break;
+	}
+	case UnitTypes::RAND_DIR:
+	{
+		float timePerFrame = (float)mTargetTimePerFrame * TIME_PER_FRAME_MULTIPLE;
+		const GraphicsBuffer* pNumbered = mpGraphicsBufferManager->getBuffer(NUMBERED);
+		assert(pNumbered);
+		const GraphicsBuffer* pDean = mpGraphicsBufferManager->getBuffer(DEAN);
+		assert(pDean);
+		Animation numberedAnimation(*pNumbered, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
+		Animation deanAnimation(*pDean, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
+
+		mpUnitManager->createUnit(pos, numberedAnimation, deanAnimation);
+		break;
+	}
+	}
+
 }
 
-void Game::createUnit(int seed)
-{
-	float timePerFrame = (float)mTargetTimePerFrame * TIME_PER_FRAME_MULTIPLE;
-	const GraphicsBuffer* pSmurfs = mpGraphicsBufferManager->getBuffer(SMURFS);
-	assert(pSmurfs);
-	const GraphicsBuffer* pDean = mpGraphicsBufferManager->getBuffer(DEAN);
-	assert(pDean);
-	Animation smurfAnimation(*pSmurfs, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
-	Animation deanAnimation(*pDean, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
-
-	
-
-	mpUnitManager->createUnit(deanAnimation, smurfAnimation, seed);
-}
-
-void Game::createUnit(const Vector2D& pos, int seed)
-{
-	float timePerFrame = (float)mTargetTimePerFrame * TIME_PER_FRAME_MULTIPLE;
-	const GraphicsBuffer* pNumbered = mpGraphicsBufferManager->getBuffer(NUMBERED);
-	assert(pNumbered);
-	const GraphicsBuffer* pDean = mpGraphicsBufferManager->getBuffer(DEAN);
-	assert(pDean);
-	Animation numberedAnimation(*pNumbered, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
-	Animation deanAnimation(*pDean, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
-
-	mpUnitManager->createUnit(pos, numberedAnimation, deanAnimation, seed);
-}
-
-void Game::HandleAction(ActionTypes type, Vector2D pos, int seed)
+void Game::HandleAction(ActionTypes type, Vector2D pos)
 {
 	switch (type)
 	{
@@ -321,17 +332,19 @@ void Game::HandleAction(ActionTypes type, Vector2D pos, int seed)
 	}
 	case ActionTypes::CreateUnit:
 	{
-		createUnit(pos);
+		createUnit(pos, UnitTypes::BASE_UNIT);
 		break;
 	}
 	case ActionTypes::CreateUnitRand:
 	{
-		createUnit(seed);
+		rand();
+		rand();
+		createUnit(pos, UnitTypes::RAND_SPAWN);
 		break;
 	}
 	case ActionTypes::CreateUnitMove:
 	{
-		createUnit(pos, seed);
+		createUnit(pos, UnitTypes::RAND_DIR);
 		break;
 	}
 	case ActionTypes::DestroyUnit:

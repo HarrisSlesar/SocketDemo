@@ -51,7 +51,7 @@ public:
 		RAND_DIR,
 		RAND_SPAWN
 	};
-	void HandleAction(ActionTypes, Vector2D, int);
+	void HandleAction(ActionTypes, Vector2D);
 
 private:
 	static Game* mspInstance;
@@ -82,9 +82,8 @@ private:
 	void render();
 
 	void loadBuffers();
-	void createUnit(const Vector2D& pos);
-	void createUnit(int seed);
-	void createUnit(const Vector2D& pos, int seed);
+	void createUnit(const Vector2D& pos, UnitTypes type);
+	
 
 	
 };

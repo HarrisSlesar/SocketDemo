@@ -121,12 +121,11 @@ Vector2D Unit::getLRPosition() const
 	return center + Vector2D(currSprite.getWidth() / 2.0f, currSprite.getHeight() / 2.0f);
 }
 
-RandomSpawnedUnit::RandomSpawnedUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation, int seed)
+RandomSpawnedUnit::RandomSpawnedUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation)
 	:mPos(position)
 	, mMainAnimation(mainAnimation)
 	, mAltAnimation(altAnimation)
 	, mpCurrentAnimation(NULL)
-	, mSeed(seed)
 {
 	mpCurrentAnimation = &mMainAnimation;
 }
@@ -215,12 +214,11 @@ void RandomSpawnedUnit::toggleAnimationPauseState()
 	mpCurrentAnimation->togglePause();
 }
 
-RandomPosUnit::RandomPosUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation, int seed)
+RandomPosUnit::RandomPosUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation)
 	:mPos(position)
 	, mMainAnimation(mainAnimation)
 	, mAltAnimation(altAnimation)
 	, mpCurrentAnimation(NULL)
-	, mSeed(seed)
 	, timer(1200)
 {
 	mpCurrentAnimation = &mMainAnimation;
@@ -233,13 +231,11 @@ void RandomPosUnit::update(double dt)
 
 	if (timer <= 0)
 	{
-		srand(mSeed);
 		int randX = rand() % 800;
 		int randY = rand() % 600;
 		Vector2D newPos(randX, randY);
 		setPosition(newPos);
 		timer = 1200;
-		mSeed += 1; //I couldn't figure out randomization in time. I know the constant srand-ing is not ideal
 	}
 
 	mpCurrentAnimation->update(dt);
