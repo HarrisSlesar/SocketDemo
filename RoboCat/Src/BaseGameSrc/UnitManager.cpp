@@ -41,6 +41,7 @@ void UnitManager::update(double dt)
 {
 	for (unsigned int i = 0; i < mUnits.size(); i++)
 	{
+		
 		mUnits[i]->update(dt);
 	}
 }
@@ -54,14 +55,31 @@ void UnitManager::draw() const
 	}
 }
 
-Unit* UnitManager::createUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation)
+Unit* UnitManager::createUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation, int type)
 {
 	MemoryManager* pMemoryManager = Game::getInstance()->getMemoryManager();
 
-	Byte* ptr = pMemoryManager->allocate(sizeof(Unit));
+	Byte* ptr;
 
-	Unit* pUnit = new(ptr)Unit(position, mainAnimation, altAnimation);//placement new create the unit.
-
+	
+	Unit* pUnit;
+	
+	switch (type)
+	{
+	case 0:
+		ptr = pMemoryManager->allocate(sizeof(Unit));
+		pUnit = new(ptr)Unit(position, mainAnimation, altAnimation);//placement new create the unit.
+		break;
+	case 1:
+		ptr = pMemoryManager->allocate(sizeof(RandomPosUnit));
+		pUnit = new(ptr)RandomPosUnit(position, mainAnimation, altAnimation);//placement new create the unit.
+		break;
+	case 2:
+		ptr = pMemoryManager->allocate(sizeof(RandomSpawnedUnit));
+		pUnit = new(ptr)RandomSpawnedUnit(position, mainAnimation, altAnimation);//placement new create the unit.
+		break;
+	}
+	
 
 
 	mUnits.push_back(pUnit);//put the unit into the vector

@@ -226,7 +226,6 @@ RandomPosUnit::RandomPosUnit(const Vector2D& position, const Animation& mainAnim
 
 void RandomPosUnit::update(double dt)
 {
-
 	timer -= dt;
 
 	if (timer <= 0)
@@ -237,9 +236,7 @@ void RandomPosUnit::update(double dt)
 		setPosition(newPos);
 		timer = 1200;
 	}
-
 	mpCurrentAnimation->update(dt);
-
 }
 
 void RandomPosUnit::draw()

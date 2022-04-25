@@ -278,7 +278,7 @@ void Game::createUnit(const Vector2D& pos, UnitTypes type)
 			Animation smurfAnimation(*pSmurfs, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
 			Animation deanAnimation(*pDean, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
 
-			mpUnitManager->createUnit(pos, smurfAnimation, deanAnimation);
+			mpUnitManager->createUnit(pos, smurfAnimation, deanAnimation, 0);
 		}
 		break;
 	}
@@ -292,7 +292,7 @@ void Game::createUnit(const Vector2D& pos, UnitTypes type)
 		Animation smurfAnimation(*pSmurfs, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
 		Animation deanAnimation(*pDean, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
 
-		mpUnitManager->createUnit(pos, deanAnimation, smurfAnimation);
+		mpUnitManager->createUnit(pos, deanAnimation, smurfAnimation, 2);
 		break;
 	}
 	case UnitTypes::RAND_DIR:
@@ -305,7 +305,7 @@ void Game::createUnit(const Vector2D& pos, UnitTypes type)
 		Animation numberedAnimation(*pNumbered, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
 		Animation deanAnimation(*pDean, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
 
-		mpUnitManager->createUnit(pos, numberedAnimation, deanAnimation);
+		mpUnitManager->createUnit(pos, numberedAnimation, deanAnimation, 1);
 		break;
 	}
 	}
