@@ -273,6 +273,11 @@ void NetworkManager::HandleWelcomePacket(InputMemoryBitStream& inInputStream)
 {
 	inInputStream.Read(mSeed);
 	srand(mSeed);
+
+	
+	inInputStream.Read(mTimeOffset);
+	std::cout << mTimeOffset << std::endl;
+
 	//first is my player id
 	int playerId;
 	inInputStream.Read(playerId);
@@ -395,6 +400,7 @@ void NetworkManager::HandleHelloPacket(InputMemoryBitStream& inInputStream, cons
 		
 		outputStream.Write(kWelcomeCC);
 		outputStream.Write(mSeed);
+		outputStream.Write(Timing::sInstance.GetTimef());
 		//we'll assign the next possible player id to this player
 		mHighestPlayerId++;
 		outputStream.Write(mHighestPlayerId);
@@ -755,6 +761,7 @@ void NetworkManager::ActionData::Write(OutputMemoryBitStream& inOutputStream)
 	inOutputStream.Write(type);
 	inOutputStream.Write(postion.getX());
 	inOutputStream.Write(postion.getY());
+	inOutputStream.Write(Timing::sInstance.GetTimef());
 }
 
 void NetworkManager::ActionData::Read(InputMemoryBitStream& inInputStream)
@@ -764,6 +771,7 @@ void NetworkManager::ActionData::Read(InputMemoryBitStream& inInputStream)
 	inInputStream.Read(x);
 	inInputStream.Read(y);
 	postion = Vector2D(x, y);
+	inInputStream.Read(timing);
 }
 
 void NetworkManager::AddInFlightPacket(TransmissionData* data, OutputMemoryBitStream& output)

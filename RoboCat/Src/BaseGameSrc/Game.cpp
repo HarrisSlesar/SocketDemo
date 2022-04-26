@@ -129,29 +129,25 @@ void Game::doLoop()
 	{
 		tracker.clearTracker("loop");
 		tracker.startTracking("loop");
+		float dt = timer.getElapsedTime();
 		timer.start();
 
 		getInput();
 
-		if (mpNetworkManager->GetState() != NetworkManager::NetworkManagerState::NMS_Delay)
-		{
+		//if (mpNetworkManager->GetState() != NetworkManager::NetworkManagerState::NMS_Delay)
+		//{
 			
-			update(mTargetTimePerFrame);
+			update(dt);
 			mpNetworkManager->ProcessIncomingPackets();
 
-			packetTimer += mTargetTimePerFrame;
+			packetTimer += dt;
 			if (packetTimer >= 500.f)
 			{
 				mpNetworkManager->SendOutgoingPackets();
 				packetTimer = 0.f;
 			}
-		}
-		else
-		{
-			//only grab the incoming packets because if I'm in delay,
-			//the only way I'm getting out is if an incoming packet saves me
-			mpNetworkManager->ProcessIncomingPackets();
-		}
+		//}
+		
 
 		
 		render();

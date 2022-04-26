@@ -125,6 +125,7 @@ private:
 		void Read(InputMemoryBitStream& inInputStream);
 		Game::ActionTypes type;
 		Vector2D postion;
+		float timing;
 	};
 
 	
@@ -259,4 +260,6 @@ private:
 
 	map<int, TransmissionData*> mInFlightPackets;
 	void AddInFlightPacket(TransmissionData*, OutputMemoryBitStream&);
+
+	float mTimeOffset = 0.f;
 };
