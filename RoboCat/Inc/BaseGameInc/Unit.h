@@ -67,7 +67,7 @@ private:
 class RandomPosUnit : public Unit
 {
 public:
-	RandomPosUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation);
+	RandomPosUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation, float timestamp);
 
 	virtual ~RandomPosUnit() {};
 
@@ -81,7 +81,6 @@ public:
 	virtual Vector2D getLRPosition() const;
 	virtual void setAnimationPauseState(bool shouldPause);
 	virtual void toggleAnimationPauseState();
-
 private:
 	Animation mMainAnimation;
 	Animation mAltAnimation;

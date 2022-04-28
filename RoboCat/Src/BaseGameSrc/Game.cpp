@@ -186,7 +186,7 @@ void Game::getInput()
 		if (mpSystem->isMouseButtonPressed(System::LEFT))
 		{
 			Vector2D mousePos = mpSystem->getCurrentMousePos();
-			createUnit(mousePos, UnitTypes::BASE_UNIT);
+			createUnit(mousePos, UnitTypes::BASE_UNIT, 0.f);
 			mpNetworkManager->addAction(ActionTypes::CreateUnit, mousePos);
 		}
 		if (mpSystem->isMouseButtonPressed(System::RIGHT))
@@ -199,7 +199,7 @@ void Game::getInput()
 		{
 			Vector2D mousePos = mpSystem->getCurrentMousePos();
 
-			createUnit(mousePos, UnitTypes::RAND_DIR);
+			createUnit(mousePos, UnitTypes::RAND_DIR, 0.f);
 			mpNetworkManager->addAction(ActionTypes::CreateUnitMove, mousePos);
 		}
 		if (mpSystem->isKeyPressed(System::TWO_KEY))
@@ -209,7 +209,7 @@ void Game::getInput()
 			int randY = rand() % 600;
 			Vector2D position(randX, randY);
 
-			createUnit(position, UnitTypes::RAND_SPAWN);
+			createUnit(position, UnitTypes::RAND_SPAWN, 0.f);
 			mpNetworkManager->addAction(ActionTypes::CreateUnitRand, position);
 		}
 	}
@@ -259,7 +259,7 @@ const int SPRITES_ACROSS = 4;
 const int SPRITES_DOWN = 4;
 const float TIME_PER_FRAME_MULTIPLE = 5;
 
-void Game::createUnit(const Vector2D& pos, UnitTypes type)
+void Game::createUnit(const Vector2D& pos, UnitTypes type, float timestamp)
 {
 	switch (type)
 	{
@@ -274,7 +274,7 @@ void Game::createUnit(const Vector2D& pos, UnitTypes type)
 			Animation smurfAnimation(*pSmurfs, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
 			Animation deanAnimation(*pDean, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
 
-			mpUnitManager->createUnit(pos, smurfAnimation, deanAnimation, 0);
+			mpUnitManager->createUnit(pos, smurfAnimation, deanAnimation, 0, timestamp);
 		}
 		break;
 	}
@@ -288,7 +288,7 @@ void Game::createUnit(const Vector2D& pos, UnitTypes type)
 		Animation smurfAnimation(*pSmurfs, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
 		Animation deanAnimation(*pDean, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
 
-		mpUnitManager->createUnit(pos, deanAnimation, smurfAnimation, 2);
+		mpUnitManager->createUnit(pos, deanAnimation, smurfAnimation, 2, timestamp);
 		break;
 	}
 	case UnitTypes::RAND_DIR:
@@ -301,14 +301,14 @@ void Game::createUnit(const Vector2D& pos, UnitTypes type)
 		Animation numberedAnimation(*pNumbered, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
 		Animation deanAnimation(*pDean, PIXEL_WIDTH, PIXEL_HEIGHT, SPRITES_ACROSS, SPRITES_DOWN, timePerFrame);
 
-		mpUnitManager->createUnit(pos, numberedAnimation, deanAnimation, 1);
+		mpUnitManager->createUnit(pos, numberedAnimation, deanAnimation, 1, timestamp);
 		break;
 	}
 	}
 
 }
 
-void Game::HandleAction(ActionTypes type, Vector2D pos)
+void Game::HandleAction(ActionTypes type, Vector2D pos, float timestamp)
 {
 	switch (type)
 	{
@@ -328,19 +328,19 @@ void Game::HandleAction(ActionTypes type, Vector2D pos)
 	}
 	case ActionTypes::CreateUnit:
 	{
-		createUnit(pos, UnitTypes::BASE_UNIT);
+		createUnit(pos, UnitTypes::BASE_UNIT, timestamp);
 		break;
 	}
 	case ActionTypes::CreateUnitRand:
 	{
 		rand();
 		rand();
-		createUnit(pos, UnitTypes::RAND_SPAWN);
+		createUnit(pos, UnitTypes::RAND_SPAWN, timestamp);
 		break;
 	}
 	case ActionTypes::CreateUnitMove:
 	{
-		createUnit(pos, UnitTypes::RAND_DIR);
+		createUnit(pos, UnitTypes::RAND_DIR, timestamp);
 		break;
 	}
 	case ActionTypes::DestroyUnit:

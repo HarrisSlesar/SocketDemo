@@ -51,7 +51,7 @@ public:
 		RAND_DIR,
 		RAND_SPAWN
 	};
-	void HandleAction(ActionTypes, Vector2D);
+	void HandleAction(ActionTypes, Vector2D, float);
 
 private:
 	static Game* mspInstance;
@@ -82,7 +82,7 @@ private:
 	void render();
 
 	void loadBuffers();
-	void createUnit(const Vector2D& pos, UnitTypes type);
+	void createUnit(const Vector2D& pos, UnitTypes type, float timestamp);
 	
 
 	

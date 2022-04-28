@@ -156,6 +156,7 @@ void NetworkManager::SendHelloPacket()
 	newData->mPacketType = kHelloCC;
 	AddInFlightPacket(newData, helloPacket);
 	helloPacket.Write(kHelloCC);
+	helloPacket.Write(Timing::sInstance.GetTimef());
 	helloPacket.Write(mName);
 	std::cout << "Saying hello" << std::endl;
 
@@ -274,8 +275,9 @@ void NetworkManager::HandleWelcomePacket(InputMemoryBitStream& inInputStream)
 	inInputStream.Read(mSeed);
 	srand(mSeed);
 
-	
-	inInputStream.Read(mTimeOffset);
+	float sentTime;
+	inInputStream.Read(sentTime);
+	mTimeOffset = sentTime;
 	std::cout << mTimeOffset << std::endl;
 
 	//first is my player id
@@ -390,6 +392,8 @@ void NetworkManager::HandleHelloPacket(InputMemoryBitStream& inInputStream, cons
 
 	if (mIsMasterPeer)
 	{
+		float sentTime;
+		inInputStream.Read(sentTime);
 		//it'll only contain the new player's name
 		string name;
 		inInputStream.Read(name);
@@ -400,7 +404,8 @@ void NetworkManager::HandleHelloPacket(InputMemoryBitStream& inInputStream, cons
 		
 		outputStream.Write(kWelcomeCC);
 		outputStream.Write(mSeed);
-		outputStream.Write(Timing::sInstance.GetTimef());
+		mTimeOffset = (Timing::sInstance.GetTimef() - sentTime);
+		outputStream.Write(mTimeOffset);
 		//we'll assign the next possible player id to this player
 		mHighestPlayerId++;
 		outputStream.Write(mHighestPlayerId);
@@ -535,7 +540,13 @@ void NetworkManager::HandleUpdatePacket(InputMemoryBitStream& inInputStream, con
 			{
 				ActionData data;
 				data.Read(inInputStream);
-				Game::getInstance()->HandleAction(data.type, data.postion);
+				float sentTime = data.timing;
+				float processedTime = Timing::sInstance.GetTimef();
+				std::cout <<sentTime - mTimeOffset << std::endl;
+				std::cout << processedTime << std::endl;
+				float delay = processedTime - (sentTime - mTimeOffset);
+				std::cout << delay << std::endl;
+				Game::getInstance()->HandleAction(data.type, data.postion, delay);
 
 			}
 		}
@@ -643,7 +654,7 @@ void NetworkManager::ReadIncomingPacketsIntoQueue()
 			}
 			else if (mState < NetworkManagerState::NMS_Playing) //Here so that it doesn't drop packets before the game has started
 			{
-				float simulatedReceivedTime = Timing::sInstance.GetTimef() + mSimulatedLatency;
+				float simulatedReceivedTime = Timing::sInstance.GetTimef();// +mSimulatedLatency;
 
 				mPacketQueue.emplace(simulatedReceivedTime, inputStream, fromAddress);
 			}

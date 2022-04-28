@@ -19,7 +19,7 @@ public:
 	void update(double dt);
 	void draw() const;
 
-	Unit* createUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation, int type);
+	Unit* createUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation, int type, float timestamp);
 	
 	void deleteAllUnitsAt2DPosition(const Vector2D& position);
 	bool deleteUnitAt2DPosition(const Vector2D& position);//return true if unit found and deleted - false otherwise

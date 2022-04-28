@@ -214,14 +214,15 @@ void RandomSpawnedUnit::toggleAnimationPauseState()
 	mpCurrentAnimation->togglePause();
 }
 
-RandomPosUnit::RandomPosUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation)
+RandomPosUnit::RandomPosUnit(const Vector2D& position, const Animation& mainAnimation, const Animation& altAnimation, float timestamp)
 	:mPos(position)
 	, mMainAnimation(mainAnimation)
 	, mAltAnimation(altAnimation)
 	, mpCurrentAnimation(NULL)
-	, timer(1200)
+	, timer(3000)
 {
 	mpCurrentAnimation = &mMainAnimation;
+	timer -= double(timestamp*1000);
 }
 
 void RandomPosUnit::update(double dt)
@@ -234,7 +235,7 @@ void RandomPosUnit::update(double dt)
 		int randY = rand() % 600;
 		Vector2D newPos(randX, randY);
 		setPosition(newPos);
-		timer = 1200;
+		timer = 3000;
 	}
 	mpCurrentAnimation->update(dt);
 }
